@@ -4,12 +4,14 @@ const state = {
     enemy: document.querySelector(".enemy"),
     timeLeft: document.querySelector("#time-left"),
     score: document.querySelector("#score"),
+    lives: document.querySelector("#lives")
   },
   values: {
     gameVelocity: 1000,
     hitPosition: 0,
     result: 0,
     curretTime: 60,
+    lives: 3,
   },
   actions: {
     timerId: setInterval(randomSquare, 1000),
@@ -17,14 +19,50 @@ const state = {
   },
 };
 
+function loseLife() {
+  state.values.lives--;
+  state.view.lives.textContent = "X" + state.values.lives;
+
+  if (state.values.lives <= 0) {
+    gameOver();
+  }
+}
+
+function resetGame() {
+  // Reseta os valores iniciais do jogo
+  state.values.curretTime = 60;
+  state.values.lives = 3;
+  state.values.result = 0;
+  state.values.hitPosition = null;
+
+  // Atualiza as visualizações
+  state.view.timeLeft.textContent = state.values.curretTime;
+  state.view.lives.textContent = "X" + state.values.lives;
+  state.view.score.textContent = state.values.result;
+
+  // Reinicia os timers
+  state.actions.timerId = setInterval(randomSquare, state.values.gameVelocity);
+  state.actions.countDownTimerId = setInterval(countDown, 1000);
+}
+
+function gameOver() {
+  // Para os timers
+  clearInterval(state.actions.timerId);
+  clearInterval(state.actions.countDownTimerId);
+
+  // Exibe a mensagem de fim de jogo
+  alert("Game Over! Sua pontuação foi: " + state.values.result);
+
+  // Reinicia o jogo
+  resetGame();
+}
+
 function countDown() {
   state.values.curretTime--;
   state.view.timeLeft.textContent = state.values.curretTime;
 
-  if (state.values.curretTime <= 0) {
-    clearInterval(state.actions.countDownTimerId);
-    clearInterval(state.actions.timerId);
-    alert("Game Over! O seu resultado foi: " + state.values.result);
+  if (state.values.curretTime === 0) {
+    gameOver();
   }
 }
 
@@ -53,6 +91,8 @@ function addListenerHitBox() {
         state.view.score.textContent = state.values.result;
         state.values.hitPosition = null;
         playSound("hit");
+      } else {
+        loseLife();
       }
     });
   });
